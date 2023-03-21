@@ -16,7 +16,7 @@ def open_and_read_file(file_path):
     return text
 
 
-def make_chains(text_string):
+def make_chains(text_string,gram_size=2):
     """Take input text as string; return dictionary of Markov chains.
 
     A chain will be a key that consists of a tuple of (word1, word2)
@@ -42,38 +42,35 @@ def make_chains(text_string):
     """
 
     chains = {}
-    words = text_string.split() #previously I had this doing text_string.split(" ") which only splits on a space, but a null parameter will split on any whitespace including newline characters
-    #print(words)
-    for i in range(len(words)-2):
-        key_pair = (words[i], words[i+1])
-        #print(f"key pair is: {key_pair}")
-        value = words[i+2]
-        #print(f"value is: {value}")
-        if key_pair in chains:
-            #chains[key_pair] = []
-            chains[key_pair].append(value)
-            #print("updating existing key pair")
-            #print(f"chains is: {chains}")
+    words = text_string.split() 
+    for i in range(len(words) - gram_size): 
+        key = ()
+        for gram in range(gram_size):
+            key = key + tuple([words[gram+i]])
+        value = words[i + gram_size]
+        if key in chains:
+            chains[key].append(value)
         else: 
-            chains[key_pair] = [value]
-            #print("adding new key pair")
-            #print(f"chains is: {chains}")
+            chains[key] = [value]
     return chains
 
 
-def make_text(chains):
+def make_text(chains,gram_size=2):
     """Return text from chains."""
     words = []
     end_not_reached = True
-    key = choice(list(chains.keys())) #set initial randomly selected key tuple
+    key = choice(list(chains.keys())) # set initial randomly selected key tuple
     while end_not_reached:
-        words.append(key[0]) #add the first word in key tuple to words list
-        next_word = choice(chains[key]) #randomly select next word from value list
-        key = (key[1],next_word) #update the key to a tuple of the second word in previous key, selected value
+        words.append(key[0]) # add the first word in key tuple to words list
+        next_word = choice(chains[key]) # randomly select next word from value list
+        key_list = list(key) # create a list based on the tuple key for mutability 
+        del key_list[0] # remove the first item in the key
+        key_list.append(next_word) # add next val to key list
+        key = tuple(key_list) # turn back to a tuple for use with chains dictionary 
         if key not in chains:
             end_not_reached = False
-            words.append(key[0])
-            words.append(key[1])
+            for gram in range(gram_size):
+                words.append(key[gram])
     return ' '.join(words)
 
 
@@ -82,13 +79,15 @@ if len(sys.argv) > 1:
 else: 
     input_path = 'green-eggs.txt'
 
+gram_size = int(input("What size of n-gram would you like to use? Enter the integer value for n: "))
+
 # Open the file and turn it into one long string
 input_text = open_and_read_file(input_path)
 
 # Get a Markov chain
-chains = make_chains(input_text)
+chains = make_chains(input_text,gram_size)
 
 # Produce random text
-random_text = make_text(chains)
+random_text = make_text(chains,gram_size)
 
 print(random_text)

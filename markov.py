@@ -58,8 +58,13 @@ def make_chains(text_string,gram_size=2):
 def make_text(chains,gram_size=2):
     """Return text from chains."""
     words = []
+    good_start_not_found = True
+    # start with a randomly selected key tuple where the first word starts with a capital letter 
+    while good_start_not_found:
+        key = choice(list(chains.keys())) # set initial randomly selected key tuple
+        if key[0][0].isupper():
+            good_start_not_found = False
     end_not_reached = True
-    key = choice(list(chains.keys())) # set initial randomly selected key tuple
     while end_not_reached:
         words.append(key[0]) # add the first word in key tuple to words list
         next_word = choice(chains[key]) # randomly select next word from value list
@@ -84,6 +89,9 @@ gram_size = int(input("What size of n-gram would you like to use? Enter the inte
 # Open the file and turn it into one long string
 input_text = open_and_read_file(input_path)
 
+if input("Enter 'yes' if you would you like to add an additional file to the Markov chain for text generation: ") == "yes":
+    additional_input_path = input("File name: ")
+    input_text = input_text + open_and_read_file(additional_input_path)
 # Get a Markov chain
 chains = make_chains(input_text,gram_size)
 
